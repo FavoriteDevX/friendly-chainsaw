@@ -120,9 +120,12 @@ if __name__ == "__main__":
     print_banner()
 
     if len(sys.argv) > 1:
-        target = sys.argv
+        target = sys.argv[1]
     else:
-        target = input("👉 Enter the full folder path to clean up: ").strip()
+        target = input("👉 Enter the full folder path to clean up: ")
+
+    # Strips accidental quotes added by terminal drag-and-drop or copy-paste
+    target = target.strip().strip('"').strip("'")
 
     resolved_path = os.path.abspath(target)
     if resolved_path in [os.path.abspath("/"), os.path.abspath(".")] or len(
