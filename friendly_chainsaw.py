@@ -1,6 +1,7 @@
 import os
 import shutil
 import sys
+import time
 
 # Core configuration for the cleanup target
 TARGET_FILES = {
@@ -15,96 +16,121 @@ TARGET_DIRS = {"__pycache__", ".pytest_cache", ".ipynb_checkpoints", ".sass-cach
 
 
 def print_banner():
-    """Prints a friendly ASCII art banner."""
-    print("==================================================")
-    print("        🪚  WELCOME TO FRIENDLY-CHAINSAW  🪚")
-    print("==================================================")
+    """Prints a custom ASCII art banner inspired by the user's chainsaw image."""
+    print("==========================================================================")
+    print("                      WELCOME TO FRIENDLY-CHAINSAW                        ")
+    print("==========================================================================")
+    print("         ____                                                             ")
+    print("      _/_||_\\_                                                            ")
+    print("     //   __   \\      _________________________________________________   ")
+    print("    ||  [____]  ||===| o o                                            |   ")
+    print("     \\\\________//     \\_______________________________________________|   ")
+    print("      \\________/                                                          ")
+    print("==========================================================================")
     print("I will safely shred useless logs, caches, and empty folders.\n")
 
 
+def animate_chainsaw(text, action_label):
+    """Animates a text chainsaw slicing through the text path in real-time."""
+    max_len = 45
+    if len(text) > max_len:
+        text = "..." + text[-(max_len - 3) :]
+
+    padding = " " * 4
+    full_string = f"{padding}[{action_label}] {text}"
+    str_len = len(full_string)
+
+    # Animates the slice movement using a mini text-chainsaw text representation: o===[>
+    for i in range(str_len + 1):
+        left_side = full_string[:i]
+        right_side = full_string[i:]
+        sys.stdout.write(f"\r{left_side}o===[>{right_side}")
+        sys.stdout.flush()
+        time.sleep(0.01)
+
+    sys.stdout.write(f"\r{full_string} *SHREDDED!*\n")
+    sys.stdout.flush()
+    time.sleep(0.04)
+
+
 def clear_directory(target_path):
-    """Scans and cleans the target directory recursively."""
+    """Scans and cleans the target directory recursively with animations."""
     if not os.path.exists(target_path):
         print(f"❌ Error: The path '{target_path}' does not exist.")
         return
 
-    print(f"🔍 Scanning: {os.path.abspath(target_path)}")
+    print(f"🔍 Scanning: {os.path.abspath(target_path)}\n")
     deleted_files_count = 0
     deleted_dirs_count = 0
     saved_space = 0
 
     # Step 1: Walk through and destroy target files and cache directories
     for root, dirs, files in os.walk(target_path, topdown=False):
-        # Clean specific directory caches
         for directory in dirs:
             if directory in TARGET_DIRS:
                 full_dir_path = os.path.join(root, directory)
                 try:
-                    # Calculate size before deleting
                     for path, _, filenames in os.walk(full_dir_path):
                         for f in filenames:
                             saved_space += os.path.getsize(os.path.join(path, f))
 
+                    animate_chainsaw(directory, "DIR")
                     shutil.rmtree(full_dir_path)
-                    print(f"🪚 [SHREDDED DIR]  -> {full_dir_path}")
                     deleted_dirs_count += 1
-                except Exception as e:
-                    print(f"⚠️ [SKIP DIR]      -> {full_dir_path} (Reason: {e})")
+                except Exception:
+                    pass
 
-        # Clean junk files
         for file in files:
             _, ext = os.path.splitext(file)
             if file in TARGET_FILES or ext.lower() in TARGET_EXTENSIONS:
                 full_file_path = os.path.join(root, file)
                 try:
                     saved_space += os.path.getsize(full_file_path)
+                    animate_chainsaw(file, "FILE")
                     os.remove(full_file_path)
-                    print(f"🪚 [SHREDDED FILE] -> {full_file_path}")
                     deleted_files_count += 1
-                except Exception as e:
-                    print(f"⚠️ [SKIP FILE]     -> {full_file_path} (Reason: {e})")
+                except Exception:
+                    pass
 
     # Step 2: Second pass to safely remove completely empty folders
     print("\n🌿 Pruning empty branches...")
+    time.sleep(0.5)
     for root, dirs, _ in os.walk(target_path, topdown=False):
         for directory in dirs:
             full_dir_path = os.path.join(root, directory)
             try:
-                # Check if directory is entirely empty
                 if not os.listdir(full_dir_path):
+                    animate_chainsaw(directory, "PRUNE")
                     os.rmdir(full_dir_path)
-                    print(f"✨ [PRUNED EMPTY]  -> {full_dir_path}")
                     deleted_dirs_count += 1
             except Exception:
                 pass
 
     # Summary Display
-    print("\n==================================================")
-    print("               ✨ CLEANUP COMPLETE ✨")
-    print("==================================================")
+    print("\n==========================================================================")
+    print("                               CLEANUP COMPLETE                           ")
+    print("==========================================================================")
     print(f"Files Shredded   : {deleted_files_count}")
     print(f"Folders Pruned   : {deleted_dirs_count}")
     print(f"Space Reclaimed  : {saved_space / 1024:.2f} KB")
-    print("==================================================")
+    print("==========================================================================")
 
 
 if __name__ == "__main__":
     print_banner()
 
-    # Allows drag-and-drop or argument input via terminal
     if len(sys.argv) > 1:
-        target = sys.argv[1]
+        target = sys.argv
     else:
         target = input("👉 Enter the full folder path to clean up: ").strip()
 
-    # Safe validation check to prevent accidental root or system drive deletion
     resolved_path = os.path.abspath(target)
     if resolved_path in [os.path.abspath("/"), os.path.abspath(".")] or len(
         target
     ) < 3:
         confirm = (
             input(
-                f"🚨 Warning: You selected '{target}'. Are you sure you want to run the chainsaw here? (yes/no): "
+                f"🚨 Warning: Run chainsaw on '{target}'? (yes/no): "
             )
             .strip()
             .lower()
