@@ -2,12 +2,9 @@
 
 A lightweight, zero-dependency CLI tool built in Python to safely shred development junk, build caches, and empty directories with a fun, real-time chainsaw animation.
 
-==========================================================================
-                      WELCOME TO FRIENDLY-CHAINSAW                        
-==========================================================================
-     <img width="557" height="360" alt="image" src="https://github.com/user-attachments/assets/0911df38-d7a1-456d-8317-d48f5857a714" />
-               
-==========================================================================
+<img width="1115" height="492" alt="image" src="https://github.com/user-attachments/assets/ba2de49f-f795-4016-af54-3b16eab10bfd" />
+
+## NOTE: this repo can damage your PC if you start destroying your entire files.
 
 ## Features
 
